@@ -2,6 +2,16 @@
   "name": "vite-static-renderer",
   "version": "1.0.0",
   "description": "A performant static site generator with CLI and Vite integration",
+  "author": "Yogesh Bhandari <develop.yogesh@gmail.com>",
+  "license": "Apache License 2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/afrankenstine/vite-static-renderer.git"
+  },
+  "homepage": "https://github.com/afrankenstine/vite-static-renderer#readme",
+  "bugs": {
+    "url": "https://github.com/afrankenstine/vite-static-renderer/issues"
+  },
   "type": "module",
   "main": "dist/index.js",
   "bin": {
