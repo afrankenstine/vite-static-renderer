@@ -6,9 +6,9 @@
   "license": "Apache License 2.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/afrankenstine/vite-static-renderer.git"
+    "url": "git+https://github.com/afrankenstine/vite-static-renderer.git"
   },
-  "homepage": "https://github.com/afrankenstine/vite-static-renderer",
+  "homepage": "https://github.com/afrankenstine/vite-static-renderer#readme",
   "bugs": {
     "url": "https://github.com/afrankenstine/vite-static-renderer/issues"
   },
