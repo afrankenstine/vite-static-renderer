@@ -40,6 +40,8 @@ const DEFAULT_CONFIG: Required<RenderConfig> = {
     retries: 2,
     cache: false,
     cacheDir: '.cache/vite-static',
+    sitemap: null, // Opt-in feature
+    robots: null, // Opt-in feature
     beforeRender: async (route: string) => {
         // Default no-op function
     },

@@ -1,6 +1,6 @@
 # vite-static-renderer
 
-A high-performance static site generator with CLI and Vite integration. Transform your SPA into lightning-fast static pages with modern browser rendering and intelligent asset handling.
+A high-performance static site generator with CLI and Vite integration. Transform your SPA into lightning-fast, SEO-ready static pages with modern browser rendering, intelligent asset handling, and automatic `sitemap.xml` and `robots.txt` generation.
 
 ## ✨ Features
 
@@ -12,6 +12,7 @@ A high-performance static site generator with CLI and Vite integration. Transfor
 - **🎯 Smart Configuration**: Multiple config formats with intelligent defaults
 - **⚙️ Parallel Processing**: Configurable concurrent rendering for speed
 - **🔄 Dynamic Routes**: Generate routes from APIs, files, or databases
+- **🤖 SEO-Ready**: Automatic `sitemap.xml` and `robots.txt` generation
 - **📦 Asset Optimization**: Intelligent asset copying and optimization
 - **🎨 Flexible Output**: Multiple naming strategies and structure options
 
@@ -173,6 +174,53 @@ export default {
   }
 };
 ```
+
+##  SEO Features
+
+Automate the creation of `sitemap.xml` and `robots.txt` for improved search engine visibility.
+
+### Sitemap Generation
+
+Enable sitemap generation by providing a `sitemap` configuration object. The `hostname` property is required to generate absolute URLs.
+
+```javascript
+// vite-static.config.js
+export default {
+  // ... other configs
+  sitemap: {
+    hostname: 'https://www.my-awesome-site.com',
+    exclude: ['/404', '/admin/*'] // Optional: Exclude specific routes using glob patterns
+  }
+};
+```
+
+This will generate a `sitemap.xml` file in your `outputDir` with all successfully rendered routes.
+
+### Robots.txt Generation
+
+Create a `robots.txt` file by defining a `robots` configuration object with a policy array.
+
+```javascript
+// vite-static.config.js
+export default {
+  // ... other configs
+  robots: {
+    policy: [
+      {
+        userAgent: '*',
+        disallow: '/admin',
+        allow: '/public/'
+      },
+      {
+        userAgent: 'Googlebot',
+        disallow: '/private/'
+      }
+    ]
+  }
+};
+```
+
+**Note:** If `sitemap` is also configured, a `Sitemap:` directive will be automatically added to your `robots.txt` file, which is an SEO best practice.
 
 ## 🌐 Dynamic Routes
 

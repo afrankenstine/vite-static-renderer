@@ -1,3 +1,19 @@
+export interface SitemapConfig {
+    /** The base hostname for your site (e.g., 'https://example.com') */
+    hostname: string;
+    /** Array of glob patterns to exclude from the sitemap */
+    exclude?: string[];
+}
+
+export interface RobotsTxtConfig {
+    /** An array of policies for different user-agents */
+    policy: {
+        userAgent: string;
+        allow?: string | string[];
+        disallow?: string | string[];
+    }[];
+}
+
 export interface RenderConfig {
     // Input/Output
     inputDir?: string;
@@ -49,6 +65,10 @@ export interface RenderConfig {
     retries?: number;
     cache?: boolean;
     cacheDir?: string;
+
+    // SEO
+    sitemap?: SitemapConfig | null;
+    robots?: RobotsTxtConfig | null;
 
     // Hooks
     beforeRender?: (route: string) => Promise<void> | void;

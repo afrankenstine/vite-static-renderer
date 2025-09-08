@@ -12,8 +12,9 @@ export default {
             pattern: '/blog/*',
             generator: async () => {
                 // Fetch from your API, files, etc.
-                const posts = await fetch('/api/posts').then(r => r.json());
-                return posts.map(post => `/blog/${post.slug}`);
+                // const posts = await fetch('/api/posts').then(r => r.json());
+                // return posts.map(post => `/blog/${post.slug}`);
+                return []; // Example, returning empty array
             }
         }
     ],
@@ -42,6 +43,28 @@ export default {
     // Build integration
     buildCommand: 'npm run build',
     skipBuild: false,
+
+    // --- SEO ---
+
+    // Sitemap generation
+    // sitemap: {
+    //   hostname: 'https://example.com' // Required: The base URL of your site
+    //   exclude: ['/404', '/admin/*'] // Optional: glob patterns to exclude
+    // },
+
+    // robots.txt generation
+    // robots: {
+    //   policy: [
+    //     {
+    //       userAgent: '*',
+    //       disallow: '/admin'
+    //     },
+    //     {
+    //       userAgent: 'Googlebot',
+    //       allow: '/'
+    //     }
+    //   ]
+    // },
 
     // Hooks
     beforeRender: async (route) => {

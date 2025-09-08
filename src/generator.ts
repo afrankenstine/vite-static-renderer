@@ -3,7 +3,7 @@ import { dirname, join, resolve } from 'path';
 import { glob } from 'glob';
 import { StaticServer } from './server.js';
 import { BrowserRenderer } from './renderer.js';
-import type { RenderConfig, RenderStats } from './types.js';
+import type { RenderConfig, RenderResult, RenderStats } from './types.js';
 import { ConfigManager } from './config.js';
 
 export class StaticGenerator {
@@ -43,6 +43,10 @@ export class StaticGenerator {
 
                 // Copy static assets
                 await this.copyAssets();
+
+                // Generate SEO files
+                await this._generateSitemap(results);
+                await this._generateRobotsTxt();
 
                 const duration = Date.now() - startTime;
                 const success = results.filter(r => r.success).length;
@@ -167,5 +171,74 @@ export class StaticGenerator {
         } catch {
             // Directory doesn't exist, ignore
         }
+    }
+
+    private static _globToRegex(glob: string): RegExp {
+        const specialChars = '\\^$.|?*+()[]{}';
+        let regexString = '';
+        for (let i = 0; i < glob.length; i++) {
+            const char = glob[i];
+            if (char === '*') {
+                regexString += '.*';
+            } else if (specialChars.includes(char)) {
+                regexString += `\\${char}`;
+            } else {
+                regexString += char;
+            }
+        }
+        return new RegExp(`^${regexString}$`);
+    }
+
+    private async _generateSitemap(results: RenderResult[]): Promise<void> {
+        if (!this.config.sitemap || !this.config.sitemap.hostname) {
+            return;
+        }
+
+        const { hostname, exclude = [] } = this.config.sitemap;
+        const excludePatterns = exclude.map(StaticGenerator._globToRegex);
+
+        const urls = results
+            .filter(r => r.success)
+            .map(r => r.route)
+            .filter(route => !excludePatterns.some(p => p.test(route)))
+            .map(route => {
+                const url = new URL(route, hostname).href;
+                return `  <url><loc>${url}</loc></url>`;
+            });
+
+        const sitemapContent = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${urls.join('\n')}
+</urlset>`;
+
+        const outputPath = join(this.config.outputDir, 'sitemap.xml');
+        await writeFile(outputPath, sitemapContent.trim(), 'utf-8');
+    }
+
+    private async _generateRobotsTxt(): Promise<void> {
+        if (!this.config.robots) {
+            return;
+        }
+
+        const lines: string[] = [];
+        this.config.robots.policy.forEach(rule => {
+            lines.push(`User-agent: ${rule.userAgent}`);
+            if (rule.allow) {
+                (Array.isArray(rule.allow) ? rule.allow : [rule.allow]).forEach(path => lines.push(`Allow: ${path}`));
+            }
+            if (rule.disallow) {
+                (Array.isArray(rule.disallow) ? rule.disallow : [rule.disallow]).forEach(path => lines.push(`Disallow: ${path}`));
+            }
+            lines.push(''); // Add a blank line between policies
+        });
+
+        // Proactively add sitemap URL if it's configured
+        if (this.config.sitemap && this.config.sitemap.hostname) {
+            const sitemapUrl = new URL('sitemap.xml', this.config.sitemap.hostname).href;
+            lines.push(`Sitemap: ${sitemapUrl}`);
+        }
+
+        const outputPath = join(this.config.outputDir, 'robots.txt');
+        await writeFile(outputPath, lines.join('\n').trim(), 'utf-8');
     }
 }
