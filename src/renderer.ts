@@ -55,8 +55,8 @@ export class BrowserRenderer {
             // Get the rendered HTML
             let html = await page.content();
 
-            // Apply post-processing
-            html = await this.postProcess(html, route);
+            // Apply post-processing (including port-to-canonical URL replacement)
+            html = await this.postProcess(html, route, serverUrl);
 
             await this.config.afterRender?.(route, html);
 
@@ -81,8 +81,45 @@ export class BrowserRenderer {
         }
     }
 
-    private async postProcess(html: string, route: string): Promise<string> {
-        // Inject meta tags
+    private async postProcess(html: string, route: string, serverUrl: string): Promise<string> {
+        // Port mapping and Canonical Link Tag rewrite
+        const canonicalUrl = this.config.canonicalUrl;
+
+        if (canonicalUrl) {
+            const normalizedServerUrl = serverUrl.replace(/\/$/, '');
+            const normalizedCanonicalUrl = canonicalUrl.replace(/\/$/, '');
+
+            // 1. Replace all occurrences of localhost/internal server address with production canonical address
+            // This corrects absolute links, dynamic Open Graph image paths, and layout URLs
+            const urlRegex = new RegExp(normalizedServerUrl, 'g');
+            html = html.replace(urlRegex, normalizedCanonicalUrl);
+
+            // 2. Inject or Update the Canonical Link Tag
+            const formattedRoute = route.startsWith('/') ? route : `/${route}`;
+            const fullCanonicalUrl = `${normalizedCanonicalUrl}${formattedRoute}`;
+
+            const canonicalTagRegex = /<link\s+[^>]*rel=["']canonical["'][^>]*>/i;
+            if (canonicalTagRegex.test(html)) {
+                // Update the existing canonical tag's href attribute
+                html = html.replace(/(<link\s+[^>]*rel=["']canonical["'][^>]*>)/i, (match) => {
+                    if (match.includes('href=')) {
+                        return match.replace(/(href=["'])([^"']*)(["'])/i, `$1${fullCanonicalUrl}$3`);
+                    } else {
+                        return match.replace(/>$/, ` href="${fullCanonicalUrl}">`);
+                    }
+                });
+            } else {
+                // Inject new canonical link into head
+                const canonicalTag = `<link rel="canonical" href="${fullCanonicalUrl}">`;
+                if (html.includes('<head>')) {
+                    html = html.replace('<head>', `<head>\n  ${canonicalTag}`);
+                } else {
+                    html = html.replace('<html>', `<html>\n<head>\n  ${canonicalTag}\n</head>`);
+                }
+            }
+        }
+
+        // Inject custom configured meta tags
         if (Object.keys(this.config.injectMeta).length > 0) {
             const metaTags = Object.entries(this.config.injectMeta)
                 .map(([name, content]) => `<meta name="${name}" content="${content}">`)

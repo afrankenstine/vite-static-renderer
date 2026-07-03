@@ -67,6 +67,7 @@ export interface RenderConfig {
     cacheDir?: string;
 
     // SEO
+    canonicalUrl?: string | null;
     sitemap?: SitemapConfig | null;
     robots?: RobotsTxtConfig | null;
 

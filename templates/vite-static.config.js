@@ -3,6 +3,9 @@ export default {
     inputDir: 'dist',
     outputDir: 'static',
 
+    // The production base URL of your site (used for rewriting localhost references and injecting canonical meta tags)
+    // canonicalUrl: 'https://example.com',
+
     // Routes to render
     routes: ['/'],
 
@@ -48,7 +51,7 @@ export default {
 
     // Sitemap generation
     // sitemap: {
-    //   hostname: 'https://example.com' // Required: The base URL of your site
+    //   hostname: 'https://example.com' // Optional if canonicalUrl is set, otherwise required
     //   exclude: ['/404', '/admin/*'] // Optional: glob patterns to exclude
     // },
 

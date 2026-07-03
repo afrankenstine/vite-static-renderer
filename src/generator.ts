@@ -190,11 +190,16 @@ export class StaticGenerator {
     }
 
     private async _generateSitemap(results: RenderResult[]): Promise<void> {
-        if (!this.config.sitemap || !this.config.sitemap.hostname) {
+        if (!this.config.sitemap && !this.config.canonicalUrl) {
             return;
         }
 
-        const { hostname, exclude = [] } = this.config.sitemap;
+        const hostname = this.config.sitemap?.hostname || this.config.canonicalUrl;
+        if (!hostname) {
+            return;
+        }
+
+        const { exclude = [] } = this.config.sitemap || {};
         const excludePatterns = exclude.map(StaticGenerator._globToRegex);
 
         const urls = results
@@ -232,9 +237,10 @@ ${urls.join('\n')}
             lines.push(''); // Add a blank line between policies
         });
 
-        // Proactively add sitemap URL if it's configured
-        if (this.config.sitemap && this.config.sitemap.hostname) {
-            const sitemapUrl = new URL('sitemap.xml', this.config.sitemap.hostname).href;
+        // Proactively add sitemap URL if it's configured or fallback to canonicalUrl
+        const sitemapHostname = this.config.sitemap?.hostname || this.config.canonicalUrl;
+        if (sitemapHostname) {
+            const sitemapUrl = new URL('sitemap.xml', sitemapHostname).href;
             lines.push(`Sitemap: ${sitemapUrl}`);
         }
 
